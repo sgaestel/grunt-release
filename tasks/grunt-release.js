@@ -83,10 +83,10 @@ module.exports = function(grunt) {
             pushTags: true,
             npm: true,
             remote: 'origin',
-            beforeReleaseTasks: [],
-            afterReleaseTasks: [],
-            beforeBumpTasks: [],
-            afterBumpTasks: []
+            beforeRelease: [],
+            afterRelease: [],
+            beforeBump: [],
+            afterBump: []
         }, (grunt.config.data[this.name] ||  {}).options);
         var config = setup(options.file, type);
 
@@ -304,34 +304,34 @@ module.exports = function(grunt) {
         }
 
         function runTasks(taskName) {
-            var tasks = options[taskName];
-            var promises = [];
-            var flags = grunt.option.flags().join(' ');
-            var msg;
+            return function() {
+                var tasks = options[taskName];
+                var promises = [];
+                var flags = grunt.option.flags().join(' ');
+                var msg;
 
-            if (Array.isArray(tasks) && tasks.length) {
-                grunt.log.ok('running ' + taskName + ' ');
+                if (Array.isArray(tasks) && tasks.length) {
+                    grunt.log.ok('running ' + taskName + ' ');
 
-				if(flags.length) {
-                	grunt.log.ok('-> current flags: ' + flags);
-                }
+                    if(flags.length) {
+                        grunt.log.ok('-> current flags: ' + flags);
+                    }
 
-                if (!nowrite) {
-                    for (var i = 0; i < tasks.length; i++) {
+                    if (!nowrite) {
                         for (var i = 0; i < tasks.length; i++) {
-                        	if(typeof tasks[i] === 'string' || !tasks[i].preserveFlags){
-                            	msg = '-> ' + tasks[i] + (flags.length ? ' (ignoring current flags)' : '');
+                            if(typeof tasks[i] === 'string' || !tasks[i].preserveFlags){
+                                msg = '-> ' + tasks[i] + (flags.length ? ' (ignoring current flags)' : '');
                                 promises.push(run('grunt ' + tasks[i], msg));
                             }
                             else if (tasks[i].preserveFlags){
-                            	promises.push(run('grunt ' + tasks[i].name + ' ' + flags, '-> ' + tasks[i].name + ' ' + flags));
+                                promises.push(run('grunt ' + tasks[i].name + ' ' + flags, '-> ' + tasks[i].name + ' ' + flags));
                             }
                         }
                     }
                 }
-            }
 
-            return Q.all(promises);
+                return Q.all(promises);
+            };
         }
 
         new Q()
